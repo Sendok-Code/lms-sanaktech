@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Form Debug</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #0f172a; color: white; }
+        .debug { background: #1e293b; padding: 20px; margin: 10px 0; border-radius: 8px; }
+        button { padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer; }
+        button:hover { background: #2563eb; }
+        input { padding: 10px; margin: 10px 0; width: 300px; background: #334155; border: 1px solid #475569; color: white; border-radius: 4px; }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <h1>Form Debug Test</h1>
+
+    <div class="debug">
+        <h3>Test 1: Simple Button Click</h3>
+        <button onclick="alert('Button works!')">Click Me</button>
+        <p id="click-result"></p>
+    </div>
+
+    <div class="debug">
+        <h3>Test 2: Form with Console Log</h3>
+        <form id="test-form" onsubmit="testFormSubmit(event)">
+            <input type="text" name="test_name" placeholder="Enter name" required>
+            <br>
+            <button type="submit" id="test-submit">Submit Test</button>
+        </form>
+        <p id="form-result"></p>
+    </div>
+
+    <div class="debug">
+        <h3>Test 3: Actual Settings Form (Copy)</h3>
+        <form action="http://localhost/project-lms/admin/settings" method="POST">
+            <input type="hidden" name="_token" value="test">
+            <input type="hidden" name="_method" value="PUT">
+            <input type="text" name="site_name" value="Test LMS" placeholder="Site Name">
+            <br>
+            <button type="submit">Save Settings</button>
+        </form>
+    </div>
+
+    <div class="debug">
+        <h3>Console Output</h3>
+        <pre id="console-output"></pre>
+    </div>
+
+    <script>
+        function log(msg) {
+            console.log(msg);
+            const output = document.getElementById('console-output');
+            output.textContent += msg + '\n';
+        }
+
+        function testFormSubmit(e) {
+            e.preventDefault();
+            log('Form submit event triggered!');
+            document.getElementById('form-result').innerHTML = '<span class="success">✓ Form submit works!</span>';
+            return false;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            log('Page loaded successfully');
+
+            const testForm = document.getElementById('test-form');
+            const testSubmit = document.getElementById('test-submit');
+
+            log('Test form found: ' + (testForm ? 'YES' : 'NO'));
+            log('Test button found: ' + (testSubmit ? 'YES' : 'NO'));
+
+            if (testSubmit) {
+                testSubmit.addEventListener('click', function(e) {
+                    log('Button clicked!');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
