@@ -36,6 +36,23 @@ return new class extends Migration
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+
+        // Certificate settings
+        DB::table('settings')->insert([
+            'key' => 'ceo_name',
+            'value' => 'John Doe',
+            'type' => 'string',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('settings')->insert([
+            'key' => 'platform_name',
+            'value' => 'LMS Learning Platform',
+            'type' => 'string',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 
     /**

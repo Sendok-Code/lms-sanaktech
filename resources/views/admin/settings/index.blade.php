@@ -271,6 +271,90 @@
                             </p>
                         </div>
                     </div>
+
+                    <!-- Certificate Settings Section -->
+                    <div class="settings-card" style="grid-column: span 2;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.5rem;">
+                            <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                <svg style="width: 24px; height: 24px; color: white;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 style="font-weight: 600; color: #f1f5f9; font-size: 1.125rem;">Pengaturan Sertifikat</h3>
+                                <p style="color: #94a3b8; font-size: 0.875rem;">Kelola informasi CEO dan tanda tangan untuk sertifikat</p>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                            <!-- CEO Name -->
+                            <div class="form-group">
+                                <label class="form-label">Nama CEO & Founder</label>
+                                <input type="text" name="ceo_name" value="{{ $settings['ceo_name']->value ?? 'CEO & Founder' }}"
+                                       class="form-input" placeholder="Contoh: Dr. Ahmad Hidayat" required>
+                                <small style="color: #94a3b8; font-size: 0.75rem; display: block; margin-top: 0.5rem;">
+                                    Nama yang akan muncul sebagai penanda tangan di sertifikat
+                                </small>
+                                @error('ceo_name')
+                                    <span style="color: #ef4444; font-size: 0.75rem; display: block; margin-top: 0.25rem;">{{ $message }}</span>
+                                @enderror
+                            </div>
+
+                            <!-- Platform Name -->
+                            <div class="form-group">
+                                <label class="form-label">Nama Platform</label>
+                                <input type="text" name="platform_name" value="{{ $settings['platform_name']->value ?? 'LMS Learning Platform' }}"
+                                       class="form-input" placeholder="Contoh: Excellence LMS Academy" required>
+                                <small style="color: #94a3b8; font-size: 0.75rem; display: block; margin-top: 0.5rem;">
+                                    Nama platform yang muncul di header sertifikat
+                                </small>
+                                @error('platform_name')
+                                    <span style="color: #ef4444; font-size: 0.75rem; display: block; margin-top: 0.25rem;">{{ $message }}</span>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <!-- CEO Signature Upload -->
+                        <div class="form-group" style="margin-top: 1.5rem;">
+                            <label class="form-label">Tanda Tangan CEO</label>
+
+                            @if(isset($settings['ceo_signature']) && $settings['ceo_signature']->value)
+                                <div style="margin-bottom: 1rem; padding: 1rem; background: rgba(15, 23, 42, 0.8); border-radius: 0.5rem; border: 1px solid #334155;">
+                                    <p style="color: #94a3b8; font-size: 0.875rem; margin-bottom: 0.5rem;">Tanda tangan saat ini:</p>
+                                    <img src="{{ asset('storage/' . $settings['ceo_signature']->value) }}"
+                                         alt="CEO Signature"
+                                         style="max-height: 120px; max-width: 300px; object-fit: contain; background: white; padding: 10px; border-radius: 8px;">
+                                </div>
+                            @endif
+
+                            <input type="file" name="ceo_signature" accept="image/png,image/jpeg,image/jpg"
+                                   class="form-input" style="padding: 0.75rem;">
+                            <small style="color: #94a3b8; font-size: 0.75rem; display: block; margin-top: 0.5rem;">
+                                Upload tanda tangan CEO (PNG, JPG, JPEG | Maks. 2MB) - <strong>Rekomendasi: PNG dengan background transparan</strong>
+                            </small>
+                            @error('ceo_signature')
+                                <span style="color: #ef4444; font-size: 0.75rem; display: block; margin-top: 0.25rem;">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <!-- Preview Certificate Info -->
+                        <div style="margin-top: 1.5rem; padding: 1rem; background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%); border-radius: 0.75rem; border: 1px solid #334155;">
+                            <div style="display: flex; align-items: start; gap: 0.75rem;">
+                                <svg style="width: 20px; height: 20px; color: #3b82f6; flex-shrink: 0; margin-top: 2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div>
+                                    <p style="color: #f1f5f9; font-size: 0.875rem; margin-bottom: 0.5rem; font-weight: 600;">Tips Tanda Tangan:</p>
+                                    <ul style="color: #94a3b8; font-size: 0.875rem; line-height: 1.6; list-style: disc; margin-left: 1.25rem;">
+                                        <li>Format terbaik: <strong>PNG dengan background transparan</strong></li>
+                                        <li>Size: 400x150px atau ratio 3:1 (horizontal)</li>
+                                        <li>Tanda tangan harus jelas dan kontras dengan background</li>
+                                        <li>Hindari background putih solid, gunakan transparan</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Save Button -->

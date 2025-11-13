@@ -165,6 +165,11 @@ Route::middleware(['auth'])->prefix('student')->name('student.')->group(function
 
     // Progress tracking
     Route::post('/progress/{video}', [StudentController::class, 'updateProgress'])->name('progress.update');
+
+    // Certificate routes
+    Route::get('/certificates/{course}', [App\Http\Controllers\Student\CertificateController::class, 'show'])->name('certificates.show');
+    Route::get('/certificates/{course}/download', [App\Http\Controllers\Student\CertificateController::class, 'download'])->name('certificates.download');
+    Route::get('/certificates/{course}/preview', [App\Http\Controllers\Student\CertificateController::class, 'preview'])->name('certificates.preview');
 });
 
 // Payment routes
@@ -192,3 +197,7 @@ Route::middleware(['auth'])->group(function () {
 Route::post('/payment/callback', [PaymentController::class, 'callback'])
     ->middleware('throttle:60,1')
     ->name('payments.callback');
+
+// SEO: Sitemap
+Route::get('/sitemap.xml', [App\Http\Controllers\SitemapController::class, 'index'])
+    ->name('sitemap');

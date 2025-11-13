@@ -1,0 +1,113 @@
+================================================================================
+                   PANDUAN CEPAT: EDIT UNTUK HOSTING
+================================================================================
+
+FILE YANG HARUS DIEDIT:
+========================
+
+1. FILE .env (ROOT PROJECT)
+   ------------------------
+   APP_ENV=production                          <- Ubah dari local
+   APP_DEBUG=false                             <- Ubah dari true
+   APP_URL=https://yourdomain.com              <- Ganti domain
+   
+   DB_DATABASE=nama_database_hosting           <- Dari cPanel
+   DB_USERNAME=username_database               <- Dari cPanel  
+   DB_PASSWORD=password_database               <- Dari cPanel
+   
+   GOOGLE_REDIRECT_URI=https://yourdomain.com/auth/google/callback
+   
+   MIDTRANS_SERVER_KEY=Mid-server-xxx          <- Production key (bukan SB-)
+   MIDTRANS_CLIENT_KEY=Mid-client-xxx          <- Production key (bukan SB-)
+   MIDTRANS_IS_PRODUCTION=true                 <- Ubah dari false
+
+2. FILE public/robots.txt
+   -----------------------
+   Ganti: Sitemap: https://yourdomain.com/sitemap.xml
+
+3. GOOGLE OAUTH CONSOLE (https://console.cloud.google.com)
+   --------------------------------------------------------
+   - Edit OAuth Client
+   - Authorized redirect URIs: https://yourdomain.com/auth/google/callback
+
+4. MIDTRANS DASHBOARD (https://dashboard.midtrans.com)
+   ----------------------------------------------------
+   - Switch ke Production Mode
+   - Copy Server Key & Client Key production
+   - Update notification URL: https://yourdomain.com/payment/callback
+
+================================================================================
+COMMAND DI HOSTING (SSH):
+================================================================================
+
+composer install --optimize-autoload --no-dev
+php artisan key:generate
+php artisan storage:link
+php artisan migrate --force
+php artisan optimize
+chmod -R 775 storage bootstrap/cache
+
+================================================================================
+SETUP CRON JOB (cPanel):
+================================================================================
+
+Minute: *
+Hour: *
+Day: *
+Month: *  
+Weekday: *
+Command: cd /home/username/laravel && php artisan schedule:run
+
+================================================================================
+SEO SETUP:
+================================================================================
+
+1. Update robots.txt dengan domain asli
+2. Submit sitemap ke Google Search Console: https://search.google.com/search-console
+3. Update Site Name, Description, Logo di Admin Settings
+
+================================================================================
+TESTING:
+================================================================================
+
+[] Homepage loading
+[] Login Google OAuth
+[] Buy course dengan Midtrans production
+[] Watch video
+[] Download certificate
+[] Check logs: tail -f storage/logs/laravel.log
+
+================================================================================
+TROUBLESHOOTING:
+================================================================================
+
+500 Error:
+  chmod -R 775 storage bootstrap/cache
+  php artisan config:clear
+
+Images tidak muncul:
+  php artisan storage:link
+
+Database connection error:
+  Cek .env DB_HOST, DB_DATABASE, DB_USERNAME, DB_PASSWORD
+
+Google OAuth error:
+  Update redirect URI di Google Console
+  Pastikan APP_URL pakai https://
+
+Payment tidak jalan:
+  MIDTRANS_IS_PRODUCTION=true
+  Gunakan production keys (Mid-, bukan SB-Mid-)
+  Website harus HTTPS (SSL)
+
+================================================================================
+PENTING:
+================================================================================
+
+- APP_DEBUG HARUS false di production!
+- .env JANGAN bisa diakses dari browser!
+- Install SSL certificate (HTTPS)
+- Backup database secara regular
+- Monitor logs: storage/logs/laravel.log
+
+================================================================================

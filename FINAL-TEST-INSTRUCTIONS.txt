@@ -1,0 +1,104 @@
+===================================================================
+                    FINAL TEST INSTRUCTIONS
+===================================================================
+
+STEP 1: CLEAR BROWSER CACHE (PENTING!)
+---------------------------------------
+1. Tutup SEMUA tab browser yang buka halaman project
+2. Tekan: Ctrl + Shift + Delete
+3. Pilih: "Cached images and files" dan "Cookies"
+4. Time range: "All time"
+5. Klik: "Clear data"
+6. TUTUP browser sepenuhnya
+7. Buka browser lagi
+
+STEP 2: HARD REFRESH
+--------------------
+1. Buka halaman learning: http://127.0.0.1:8000/student/courses/1/learn
+2. Tekan: Ctrl + Shift + R (BUKAN Ctrl + F5)
+3. Tunggu sampai halaman fully loaded
+
+STEP 3: TEST BUTTON
+-------------------
+1. Klik tombol "Tandai Selesai"
+2. Tunggu 1 detik
+3. Lihat apa yang terjadi
+
+===================================================================
+                    EXPECTED BEHAVIOR
+===================================================================
+
+JIKA BERFUNGSI:
+--------------
+1. Icon video di sidebar berubah jadi checkmark hijau
+2. Progress bar update
+3. Setelah 0.3 detik, video PINDAH ke video berikutnya
+4. Button "Tandai Selesai" muncul lagi untuk video baru
+
+VIDEO TERAKHIR:
+--------------
+1. Icon berubah hijau
+2. Langsung REDIRECT ke halaman certificate
+
+===================================================================
+                    JIKA MASIH TIDAK BERFUNGSI
+===================================================================
+
+TEST 1: Buka Console (F12)
+--------------------------
+1. Tekan F12
+2. Klik tab "Console"
+3. Lihat ada ERROR MERAH?
+4. Screenshot dan kirim
+
+TEST 2: Check Button Element
+----------------------------
+Di Console, ketik ini dan Enter:
+
+    document.getElementById('complete-btn')
+
+Harus return: <button ...>
+
+Jika return null, berarti button tidak ada.
+
+TEST 3: Check Function
+---------------------
+Di Console, ketik ini dan Enter:
+
+    typeof markAsComplete
+
+Harus return: "function"
+
+Jika return "undefined", berarti function tidak loaded.
+
+TEST 4: Manual Call
+------------------
+Di Console, ketik ini dan Enter (GANTI 1 dengan ID video saat ini):
+
+    markAsComplete(1)
+
+Lihat apa yang terjadi.
+
+TEST 5: Check Network
+--------------------
+1. Buka tab "Network" di DevTools (F12)
+2. Klik "Tandai Selesai"
+3. Lihat ada request ke /student/progress/... ?
+4. Klik request tersebut
+5. Lihat Status Code (harus 200)
+6. Lihat Response (harus {success: true, ...})
+7. Screenshot
+
+===================================================================
+                    INFORMASI UNTUK DEBUG
+===================================================================
+
+Tolong kirim screenshot atau info:
+
+1. Console tab - ada error?
+2. Network tab - request /student/progress berhasil?
+3. Response dari server - apa isinya?
+
+Dengan info ini saya bisa tahu exact problem nya dimana.
+
+===================================================================

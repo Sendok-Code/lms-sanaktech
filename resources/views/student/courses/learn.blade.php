@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="certificate-url" content="{{ route('student.certificates.show', $course) }}">
     <title>{{ $course->title }} - Belajar</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
@@ -62,9 +63,37 @@
             position: relative;
         }
 
+        .video-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
         .video-player {
             width: 100%;
             height: 100%;
+            pointer-events: auto;
+        }
+
+        /* Overlay to block right-click and hide YouTube UI elements */
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 150px;
+            height: 80px;
+            background: transparent;
+            z-index: 10;
+            pointer-events: all;
+            cursor: default;
+        }
+
+        .video-overlay:hover {
+            background: rgba(0, 0, 0, 0.01);
         }
 
         .video-info {
@@ -228,7 +257,31 @@
             <!-- Video Player -->
             <div class="video-container">
                 @if($currentVideo)
-                    <iframe id="video-player" class="video-player" src="{{ $currentVideo->video_url }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    @php
+                        $url = $currentVideo->video_url;
+                        // Convert to embed URL with youtube-nocookie.com for privacy
+                        $url = str_replace('youtube.com/watch?v=', 'youtube-nocookie.com/embed/', $url);
+                        $url = str_replace('www.youtube.com', 'www.youtube-nocookie.com', $url);
+                        $url = str_replace('youtube.com/embed/', 'youtube-nocookie.com/embed/', $url);
+                        $url = str_replace('youtu.be/', 'youtube-nocookie.com/embed/', $url);
+
+                        // Add parameters to minimize branding and prevent external links
+                        $separator = strpos($url, '?') !== false ? '&' : '?';
+                        $url .= $separator . 'rel=0&modestbranding=1&showinfo=0&fs=1&controls=1&disablekb=1&iv_load_policy=3';
+                    @endphp
+                    <div class="video-wrapper" oncontextmenu="return false;">
+                        <iframe
+                            id="video-player"
+                            class="video-player"
+                            src="{{ $url }}"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                            allowfullscreen
+                            loading="lazy">
+                        </iframe>
+                        <!-- Overlay to block YouTube share button and right-click -->
+                        <div class="video-overlay" oncontextmenu="return false;"></div>
+                    </div>
                 @else
                     <div class="text-center text-gray-500">
                         <svg class="w-24 h-24 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -246,19 +299,14 @@
                 <div class="flex items-start justify-between mb-4">
                     <div class="flex-1">
                         <h2 class="text-xl font-bold mb-2">{{ $currentVideo->title }}</h2>
-                        <div class="flex items-center gap-4 text-sm text-gray-400">
-                            @if($currentVideo->duration_seconds)
-                            <span>Durasi: {{ gmdate('i:s', $currentVideo->duration_seconds) }}</span>
-                            @endif
-                        </div>
                     </div>
-                    <button onclick="markAsComplete({{ $currentVideo->id }})"
-                            id="complete-btn"
+                    <button onclick="handleNext()"
+                            id="next-btn"
                             class="btn btn-primary">
+                        <span id="btn-text">Lanjutkan</span>
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
                         </svg>
-                        Tandai Selesai
                     </button>
                 </div>
 
@@ -303,6 +351,9 @@
                         @foreach($module->videos as $video)
                         <div class="video-item {{ $currentVideo && $currentVideo->id == $video->id ? 'active' : '' }} {{ isset($progress[$video->id]) && $progress[$video->id]->completed ? 'completed' : '' }}"
                              data-video-id="{{ $video->id }}"
+                             data-video-url="{{ $video->video_url }}"
+                             data-video-title="{{ $video->title }}"
+                             data-video-duration="{{ $video->duration_seconds ?? 0 }}"
                              onclick="loadVideo({{ $video->id }}, '{{ $video->video_url }}', '{{ addslashes($video->title) }}', {{ $video->duration_seconds ?? 0 }})">
                             <div class="flex-shrink-0">
                                 @if(isset($progress[$video->id]) && $progress[$video->id]->completed)
@@ -384,46 +435,99 @@
             const content = document.getElementById('module-' + moduleId);
             const arrow = document.getElementById('arrow-' + moduleId);
 
-            content.classList.toggle('hidden');
-            arrow.classList.toggle('rotate-180');
+            if (content) {
+                content.classList.toggle('hidden');
+            } else {
+                console.warn('Module content not found for ID:', moduleId);
+            }
+
+            if (arrow) {
+                arrow.classList.toggle('rotate-180');
+            } else {
+                console.warn('Module arrow not found for ID:', moduleId);
+            }
         }
 
         // Load video
         function loadVideo(videoId, videoUrl, videoTitle, duration) {
             currentVideoId = videoId;
-            const videoPlayer = document.getElementById('video-player');
 
-            // Update iframe src for YouTube
-            videoPlayer.src = videoUrl;
+            // Convert to youtube-nocookie.com embed URL
+            let embedUrl = videoUrl;
+            embedUrl = embedUrl.replace('youtube.com/watch?v=', 'youtube-nocookie.com/embed/');
+            embedUrl = embedUrl.replace('www.youtube.com', 'www.youtube-nocookie.com');
+            embedUrl = embedUrl.replace('youtube.com/embed/', 'youtube-nocookie.com/embed/');
+            embedUrl = embedUrl.replace('youtu.be/', 'youtube-nocookie.com/embed/');
+
+            // Add parameters to minimize branding and prevent external links
+            const separator = embedUrl.includes('?') ? '&' : '?';
+            embedUrl += separator + 'rel=0&modestbranding=1&showinfo=0&fs=1&controls=1&disablekb=1&iv_load_policy=3';
+
+            // Update video player
+            const videoPlayer = document.getElementById('video-player');
+            if (videoPlayer) {
+                videoPlayer.src = embedUrl;
+            }
 
             // Update active state
-            document.querySelectorAll('.video-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            document.querySelector(`[data-video-id="${videoId}"]`).classList.add('active');
+            document.querySelectorAll('.video-item').forEach(item => item.classList.remove('active'));
+            const videoItem = document.querySelector(`[data-video-id="${videoId}"]`);
+            if (videoItem) {
+                videoItem.classList.add('active');
+            }
 
             // Update title
-            document.querySelector('.video-info h2').textContent = videoTitle;
+            const titleElement = document.querySelector('.video-info h2');
+            if (titleElement) {
+                titleElement.textContent = videoTitle;
+            }
 
-            // Update complete button based on video status
-            const btn = document.getElementById('complete-btn');
-            const videoItem = document.querySelector(`[data-video-id="${videoId}"]`);
+            // Update button text based on whether there's a next video
+            updateNextButton(videoId);
+        }
 
-            if (videoItem.classList.contains('completed')) {
-                btn.innerHTML = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Selesai';
-                btn.disabled = true;
-                btn.classList.add('opacity-75');
+        // Update next button text
+        function updateNextButton(videoId) {
+            const allVideos = Array.from(document.querySelectorAll('.video-item'));
+            const currentIndex = allVideos.findIndex(v => v.dataset.videoId == videoId);
+            const btnText = document.getElementById('btn-text');
+
+            if (!btnText) {
+                console.warn('Button text element not found when updating button');
+                return;
+            }
+
+            // Check if this is the last video
+            if (currentIndex === allVideos.length - 1) {
+                btnText.textContent = 'Selesai & Lihat Sertifikat';
             } else {
-                btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Tandai Selesai';
-                btn.disabled = false;
-                btn.classList.remove('opacity-75');
-                btn.onclick = function() { markAsComplete(videoId); };
+                btnText.textContent = 'Lanjutkan';
             }
         }
 
-        // Mark video as complete
-        function markAsComplete(videoId) {
-            fetch(`/student/progress/${videoId}`, {
+        // Handle next button click
+        function handleNext() {
+            const btn = document.getElementById('next-btn');
+            const btnText = document.getElementById('btn-text');
+
+            if (!btn || !btnText) {
+                console.error('Button elements not found!', {btn, btnText});
+                alert('Error: Button tidak ditemukan. Silakan refresh halaman.');
+                return;
+            }
+
+            const originalText = btnText.textContent;
+
+            btn.disabled = true;
+            btnText.textContent = 'Memproses...';
+
+            console.log('=== DEBUG INFO ===');
+            console.log('Current video ID:', currentVideoId);
+            console.log('CSRF Token:', csrfToken);
+            console.log('Request URL:', `/student/progress/${currentVideoId}`);
+
+            // Mark current video as complete
+            fetch(`/student/progress/${currentVideoId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -434,59 +538,90 @@
                     watched_seconds: 0
                 })
             })
-            .then(response => response.json())
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        console.error('Response error text:', text);
+                        throw new Error(`HTTP error! status: ${response.status}, body: ${text}`);
+                    });
+                }
+                return response.json();
+            })
             .then(data => {
+                console.log('Response data:', data);
+
                 if (data.success) {
-                    // Mark as completed visually
-                    const videoItem = document.querySelector(`[data-video-id="${videoId}"]`);
-                    videoItem.classList.add('completed');
+                    // Update icon to green checkmark
+                    const videoItem = document.querySelector(`[data-video-id="${currentVideoId}"]`);
+                    if (videoItem) {
+                        videoItem.classList.add('completed');
+                        const icon = videoItem.querySelector('svg');
+                        if (icon) {
+                            icon.outerHTML = `<svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+                        }
+                    }
 
-                    const icon = videoItem.querySelector('svg');
-                    icon.outerHTML = `<svg class="w-5 h-5 text-green-400" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>`;
-
+                    // Update progress
                     updateProgress();
 
-                    // Update button
-                    const btn = document.getElementById('complete-btn');
-                    btn.innerHTML = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Selesai';
-                    btn.disabled = true;
-                    btn.classList.add('opacity-75');
+                    // Find next video
+                    const allVideos = Array.from(document.querySelectorAll('.video-item'));
+                    const currentIndex = allVideos.findIndex(v => v.dataset.videoId == currentVideoId);
 
-                    // Auto load next video
-                    setTimeout(() => {
-                        loadNextVideo(videoId);
-                    }, 1000); // Wait 1 second before loading next
+                    console.log('Current index:', currentIndex, 'Total videos:', allVideos.length);
+
+                    if (currentIndex < allVideos.length - 1) {
+                        // Load next video
+                        const nextVideo = allVideos[currentIndex + 1];
+                        setTimeout(() => {
+                            loadVideo(
+                                parseInt(nextVideo.dataset.videoId),
+                                nextVideo.dataset.videoUrl,
+                                nextVideo.dataset.videoTitle,
+                                parseInt(nextVideo.dataset.videoDuration)
+                            );
+                            btn.disabled = false;
+                            btnText.textContent = originalText;
+                        }, 300);
+                    } else {
+                        // Last video - redirect to certificate
+                        console.log('Last video completed, redirecting to certificate...');
+                        const certificateUrl = document.querySelector('meta[name="certificate-url"]')?.content;
+                        console.log('Certificate URL:', certificateUrl);
+
+                        if (certificateUrl) {
+                            btnText.textContent = 'Menuju Sertifikat...';
+                            setTimeout(() => {
+                                window.location.href = certificateUrl;
+                            }, 1000);
+                        } else {
+                            console.error('Certificate URL not found!');
+                            alert('Error: URL sertifikat tidak ditemukan. Silakan refresh halaman.');
+                            btn.disabled = false;
+                            btnText.textContent = originalText;
+                        }
+                    }
+                } else {
+                    console.error('Failed to mark video as complete:', data);
+                    alert('Gagal menandai video sebagai selesai: ' + (data.error || 'Unknown error'));
+                    btn.disabled = false;
+                    btnText.textContent = originalText;
                 }
             })
-            .catch(error => console.error('Error:', error));
+            .catch(error => {
+                console.error('Catch error:', error);
+                console.error('Error message:', error.message);
+                console.error('Error stack:', error.stack);
+                alert('Terjadi kesalahan: ' + error.message);
+                btn.disabled = false;
+                btnText.textContent = originalText;
+            });
         }
 
-        // Load next video
-        function loadNextVideo(currentVideoId) {
-            const allVideos = document.querySelectorAll('.video-item');
-            let foundCurrent = false;
-            let nextVideo = null;
 
-            for (let video of allVideos) {
-                if (foundCurrent && !video.classList.contains('completed')) {
-                    nextVideo = video;
-                    break;
-                }
-                if (video.getAttribute('data-video-id') == currentVideoId) {
-                    foundCurrent = true;
-                }
-            }
-
-            if (nextVideo) {
-                // Click the next video
-                nextVideo.click();
-            } else {
-                // All videos completed - show congratulations
-                alert('🎉 Selamat! Anda telah menyelesaikan semua video dalam kursus ini!');
-            }
-        }
 
         // Update overall progress
         function updateProgress() {
@@ -494,18 +629,110 @@
             const completedVideos = document.querySelectorAll('.video-item.completed').length;
             const percentage = Math.round((completedVideos / totalVideos) * 100);
 
-            document.getElementById('course-progress').textContent = percentage + '%';
-            document.getElementById('sidebar-progress').style.width = percentage + '%';
+            const courseProgressEl = document.getElementById('course-progress');
+            const sidebarProgressEl = document.getElementById('sidebar-progress');
+
+            if (courseProgressEl) {
+                courseProgressEl.textContent = percentage + '%';
+            }
+
+            if (sidebarProgressEl) {
+                sidebarProgressEl.style.width = percentage + '%';
+            }
 
             // Update module counts
             document.querySelectorAll('.module-item').forEach(module => {
-                const moduleId = module.querySelector('[id^="module-"]').id.replace('module-', '');
+                const moduleContentDiv = module.querySelector('[id^="module-"]');
+                if (!moduleContentDiv) {
+                    console.warn('Module content div not found for module:', module);
+                    return;
+                }
+
+                const moduleId = moduleContentDiv.id.replace('module-', '');
                 const moduleVideos = module.querySelectorAll('.video-item');
                 const moduleCompleted = module.querySelectorAll('.video-item.completed').length;
 
-                document.getElementById('module-count-' + moduleId).textContent =
-                    moduleCompleted + '/' + moduleVideos.length;
+                const moduleCountEl = document.getElementById('module-count-' + moduleId);
+                if (moduleCountEl) {
+                    moduleCountEl.textContent = moduleCompleted + '/' + moduleVideos.length;
+                } else {
+                    console.warn('Module count element not found for module ID:', moduleId);
+                }
             });
+        }
+
+        // Disable right-click and keyboard shortcuts on video
+        function protectVideo() {
+            const videoContainer = document.querySelector('.video-container');
+            const videoWrapper = document.querySelector('.video-wrapper');
+            const videoOverlay = document.querySelector('.video-overlay');
+
+            // Disable right-click on entire video container
+            if (videoContainer) {
+                videoContainer.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }, true);
+            }
+
+            if (videoWrapper) {
+                videoWrapper.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }, true);
+
+                // Disable drag
+                videoWrapper.addEventListener('dragstart', function(e) {
+                    e.preventDefault();
+                    return false;
+                });
+
+                // Disable selection
+                videoWrapper.addEventListener('selectstart', function(e) {
+                    e.preventDefault();
+                    return false;
+                });
+            }
+
+            if (videoOverlay) {
+                videoOverlay.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }, true);
+            }
+
+            // Disable keyboard shortcuts globally when focused on video area
+            document.addEventListener('keydown', function(e) {
+                const target = e.target;
+                const inVideoArea = target.closest('.video-container');
+
+                if (inVideoArea) {
+                    // Disable dev tools shortcuts
+                    if (
+                        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i')) ||
+                        (e.ctrlKey && e.shiftKey && (e.key === 'C' || e.key === 'c')) ||
+                        (e.ctrlKey && e.shiftKey && (e.key === 'J' || e.key === 'j')) ||
+                        (e.ctrlKey && (e.key === 'u' || e.key === 'U')) ||
+                        (e.key === 'F12')
+                    ) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    }
+                }
+            }, true);
+
+            // Disable right-click on document level for extra protection
+            document.addEventListener('contextmenu', function(e) {
+                if (e.target.closest('.video-container') || e.target.closest('.video-wrapper')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+            }, true);
         }
 
         // Initialize
@@ -519,6 +746,14 @@
 
             // Update initial progress
             updateProgress();
+
+            // Update button text for current video
+            if (currentVideoId) {
+                updateNextButton(currentVideoId);
+            }
+
+            // Protect video from copying
+            protectVideo();
         });
     </script>
 </body>

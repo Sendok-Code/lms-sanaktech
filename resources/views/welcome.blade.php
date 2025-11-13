@@ -6,8 +6,19 @@
     @php
         $siteName = \App\Models\Setting::get('site_name', 'MyLMS');
         $siteDescription = \App\Models\Setting::get('site_description', 'Platform Pembelajaran Online Terbaik');
+        $siteLogo = \App\Models\Setting::get('site_logo');
+        $ogImage = $siteLogo ? asset('storage/' . $siteLogo) : null;
     @endphp
-    <title>{{ $siteName }} - {{ $siteDescription }}</title>
+
+    <!-- SEO Meta Tags -->
+    <x-seo-meta
+        :title="$siteName"
+        :description="$siteDescription"
+        :keywords="['kursus online indonesia', 'belajar online', 'platform pembelajaran', 'kursus programming', 'kursus design', 'sertifikat online']"
+        :image="$ogImage"
+        type="website"
+    />
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">

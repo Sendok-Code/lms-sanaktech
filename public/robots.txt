@@ -1,2 +1,26 @@
+# Robots.txt for LMS Platform
 User-agent: *
-Disallow:
+Allow: /
+Disallow: /admin/
+Disallow: /student/dashboard
+Disallow: /login
+Disallow: /logout
+Disallow: /auth/
+
+# Sitemap
+Sitemap: https://yourdomain.com/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 10
+
+# Googlebot specific
+User-agent: Googlebot
+Allow: /
+Disallow: /admin/
+Disallow: /student/dashboard
+
+# Bingbot specific  
+User-agent: Bingbot
+Allow: /
+Disallow: /admin/
+Disallow: /student/dashboard

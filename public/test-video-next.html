@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Video Auto-Next</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-box {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #f97316;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 5px;
+        }
+        button:hover {
+            background: #ea580c;
+        }
+        .video-item {
+            padding: 15px;
+            margin: 10px 0;
+            background: #f3f4f6;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        .video-item:hover {
+            background: #e5e7eb;
+        }
+        .video-item.active {
+            border-color: #f97316;
+            background: #fff7ed;
+        }
+        .video-item.completed {
+            background: #d1fae5;
+        }
+        .log {
+            background: #1f2937;
+            color: #10b981;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        .success { color: #10b981; }
+        .error { color: #ef4444; }
+        .warning { color: #f59e0b; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Video Auto-Next</h1>
+
+    <div class="test-box">
+        <h2>Step 1: Manual Test - Click Video</h2>
+        <p>Klik video di bawah untuk test apakah loadVideo berfungsi:</p>
+
+        <div id="video-1" class="video-item active" data-video-id="1" onclick="testLoadVideo(1)">
+            📹 Video 1 - Introduction (Active)
+        </div>
+        <div id="video-2" class="video-item" data-video-id="2" onclick="testLoadVideo(2)">
+            📹 Video 2 - Getting Started
+        </div>
+        <div id="video-3" class="video-item" data-video-id="3" onclick="testLoadVideo(3)">
+            📹 Video 3 - Advanced Topics
+        </div>
+
+        <div id="current-video" style="margin-top: 20px; padding: 15px; background: #fef3c7; border-radius: 6px;">
+            <strong>Currently Playing:</strong> Video 1
+        </div>
+    </div>
+
+    <div class="test-box">
+        <h2>Step 2: Test Auto-Next Logic</h2>
+        <button onclick="testMarkComplete()">Simulate "Tandai Selesai"</button>
+        <button onclick="resetTest()">Reset Test</button>
+
+        <div class="log" id="log"></div>
+    </div>
+
+    <div class="test-box">
+        <h2>Step 3: Open Real Learning Page</h2>
+        <button onclick="window.open('/student/courses/1/learn', '_blank')">Open Learning Page</button>
+        <p style="color: #6b7280; font-size: 14px; margin-top: 10px;">
+            Buka halaman learning asli dan test langsung di sana
+        </p>
+    </div>
+
+    <script>
+        let currentVideoId = 1;
+        const logEl = document.getElementById('log');
+
+        function log(message, type = 'success') {
+            const timestamp = new Date().toLocaleTimeString();
+            logEl.innerHTML += `<div class="${type}">[${timestamp}] ${message}</div>`;
+            logEl.scrollTop = logEl.scrollHeight;
+        }
+
+        function testLoadVideo(videoId) {
+            log(`Loading video ${videoId}...`, 'warning');
+
+            // Remove active from all
+            document.querySelectorAll('.video-item').forEach(v => {
+                v.classList.remove('active');
+            });
+
+            // Set active
+            document.getElementById('video-' + videoId).classList.add('active');
+
+            // Update current
+            document.getElementById('current-video').innerHTML =
+                `<strong>Currently Playing:</strong> Video ${videoId}`;
+
+            currentVideoId = videoId;
+
+            log(`✅ Video ${videoId} loaded successfully!`, 'success');
+        }
+
+        function testMarkComplete() {
+            log(`Marking video ${currentVideoId} as complete...`, 'warning');
+
+            // Mark as completed
+            const videoItem = document.querySelector(`[data-video-id="${currentVideoId}"]`);
+            videoItem.classList.add('completed');
+            videoItem.innerHTML = videoItem.innerHTML.replace('📹', '✅');
+
+            log(`✅ Video ${currentVideoId} marked as completed`, 'success');
+
+            // Find next video
+            log(`Looking for next video...`, 'warning');
+
+            const allVideos = document.querySelectorAll('.video-item');
+            let foundCurrent = false;
+            let nextVideo = null;
+
+            for (let video of allVideos) {
+                if (foundCurrent && !video.classList.contains('completed')) {
+                    nextVideo = video;
+                    break;
+                }
+                if (video.getAttribute('data-video-id') == currentVideoId) {
+                    foundCurrent = true;
+                }
+            }
+
+            if (nextVideo) {
+                const nextId = nextVideo.getAttribute('data-video-id');
+                log(`▶️ Found next video: ${nextId}`, 'success');
+                log(`Clicking next video...`, 'warning');
+
+                // Click next video
+                setTimeout(() => {
+                    nextVideo.click();
+                    log(`✅ Successfully loaded video ${nextId}!`, 'success');
+                }, 500);
+            } else {
+                log(`🎉 All videos completed!`, 'success');
+                log(`Would redirect to certificate page...`, 'warning');
+            }
+        }
+
+        function resetTest() {
+            logEl.innerHTML = '';
+            currentVideoId = 1;
+
+            document.querySelectorAll('.video-item').forEach(v => {
+                v.classList.remove('active', 'completed');
+                v.innerHTML = v.innerHTML.replace('✅', '📹');
+            });
+
+            document.getElementById('video-1').classList.add('active');
+            document.getElementById('current-video').innerHTML =
+                '<strong>Currently Playing:</strong> Video 1';
+
+            log('Test reset', 'warning');
+        }
+
+        log('Test page loaded. Click videos to test manual navigation.', 'success');
+    </script>
+
+    <hr style="margin: 40px 0; border: 1px solid #e5e7eb;">
+
+    <div style="background: #fef3c7; padding: 15px; border-radius: 6px; border-left: 4px solid #f59e0b;">
+        <h3 style="margin-top: 0;">📝 Instruksi:</h3>
+        <ol>
+            <li><strong>Test Manual Click:</strong> Klik video 2 atau 3 di atas. Lihat apakah "Currently Playing" berubah.</li>
+            <li><strong>Test Auto-Next:</strong> Klik button "Simulate Tandai Selesai". Lihat apakah otomatis pindah ke video berikutnya.</li>
+            <li><strong>Test di Real Page:</strong> Klik "Open Learning Page" untuk test di halaman asli.</li>
+        </ol>
+
+        <h4>✅ Jika berfungsi di sini tapi tidak di halaman asli:</h4>
+        <ul>
+            <li>Masalah ada di fetch request atau response dari server</li>
+            <li>Buka Console (F12) di halaman asli</li>
+            <li>Lihat Network tab saat klik "Tandai Selesai"</li>
+            <li>Screenshot request/response nya</li>
+        </ul>
+    </div>
+</body>
+</html>

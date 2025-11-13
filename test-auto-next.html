@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Auto-Next Video</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #00ff00;
+        }
+        .test-section {
+            background: #000;
+            border: 2px solid #00ff00;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        button {
+            background: #00ff00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            margin: 5px;
+        }
+        button:hover {
+            background: #00cc00;
+        }
+        .log {
+            background: #0a0a0a;
+            padding: 10px;
+            margin-top: 10px;
+            border-left: 3px solid #00ff00;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success { color: #00ff00; }
+        .error { color: #ff0000; }
+        .warning { color: #ffaa00; }
+        .info { color: #00aaff; }
+    </style>
+</head>
+<body>
+    <h1>🔧 AUTO-NEXT VIDEO - DIAGNOSTIC TEST</h1>
+
+    <div class="test-section">
+        <h2>Test 1: JavaScript Functions Available</h2>
+        <button onclick="test1()">Run Test 1</button>
+        <div id="test1-log" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 2: Video Items Detection</h2>
+        <button onclick="test2()">Run Test 2</button>
+        <div id="test2-log" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 3: Simulate Video List</h2>
+        <button onclick="test3()">Run Test 3 - Create Mock Videos</button>
+        <button onclick="test4()">Run Test 4 - Simulate Complete & Next</button>
+        <div id="mock-videos"></div>
+        <div id="test3-log" class="log"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test 5: Open Learning Page</h2>
+        <p class="info">Buka halaman learning di tab baru, lalu check console log</p>
+        <button onclick="openLearningPage()">Open Learning Page</button>
+        <div id="test5-log" class="log"></div>
+    </div>
+
+    <script>
+        function log(testId, message, type = 'info') {
+            const logDiv = document.getElementById(testId + '-log');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type;
+            logDiv.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+        }
+
+        function test1() {
+            const testId = 'test1';
+            const logDiv = document.getElementById(testId + '-log');
+            logDiv.innerHTML = '';
+
+            log(testId, 'Checking if functions exist in window scope...', 'info');
+
+            const functions = [
+                'markAsComplete',
+                'loadNextVideo',
+                'showCongratulations',
+                'updateProgress'
+            ];
+
+            let allExists = true;
+
+            functions.forEach(funcName => {
+                if (typeof window[funcName] === 'function') {
+                    log(testId, `✅ ${funcName}() exists`, 'success');
+                } else {
+                    log(testId, `❌ ${funcName}() NOT FOUND`, 'error');
+                    allExists = false;
+                }
+            });
+
+            if (allExists) {
+                log(testId, '🎉 All functions available!', 'success');
+            } else {
+                log(testId, '⚠️ Some functions missing - check if script loaded', 'warning');
+            }
+        }
+
+        function test2() {
+            const testId = 'test2';
+            const logDiv = document.getElementById(testId + '-log');
+            logDiv.innerHTML = '';
+
+            log(testId, 'Checking for video items...', 'info');
+
+            const videoItems = document.querySelectorAll('.video-item');
+            log(testId, `Found ${videoItems.length} video items`, videoItems.length > 0 ? 'success' : 'warning');
+
+            if (videoItems.length === 0) {
+                log(testId, '⚠️ No video items found. You need to be on the learning page.', 'warning');
+                log(testId, 'Click "Open Learning Page" button above', 'info');
+            } else {
+                videoItems.forEach((item, index) => {
+                    const videoId = item.getAttribute('data-video-id');
+                    const isCompleted = item.classList.contains('completed');
+                    log(testId, `Video ${index + 1}: ID=${videoId}, Completed=${isCompleted}`, 'info');
+                });
+            }
+        }
+
+        function test3() {
+            const testId = 'test3';
+            const logDiv = document.getElementById(testId + '-log');
+            logDiv.innerHTML = '';
+
+            log(testId, 'Creating mock video list...', 'info');
+
+            const mockContainer = document.getElementById('mock-videos');
+            mockContainer.innerHTML = '';
+            mockContainer.style.cssText = 'padding: 10px; background: #1a1a1a; border: 1px solid #444;';
+
+            // Create mock videos
+            for (let i = 1; i <= 5; i++) {
+                const videoItem = document.createElement('div');
+                videoItem.className = 'video-item';
+                videoItem.setAttribute('data-video-id', i);
+                videoItem.style.cssText = 'padding: 10px; margin: 5px; background: #333; cursor: pointer; border: 1px solid #555;';
+                videoItem.innerHTML = `📹 Video ${i} <span class="status">(Not Completed)</span>`;
+
+                videoItem.onclick = function() {
+                    log(testId, `Clicked Video ${i}`, 'info');
+                };
+
+                mockContainer.appendChild(videoItem);
+            }
+
+            log(testId, '✅ Created 5 mock videos', 'success');
+            log(testId, 'Now run Test 4 to simulate complete & next', 'info');
+        }
+
+        function test4() {
+            const testId = 'test3';
+            log(testId, '▶️ Simulating complete video 1 and move to next...', 'info');
+
+            const video1 = document.querySelector('[data-video-id="1"]');
+            if (!video1) {
+                log(testId, '❌ Video 1 not found. Run Test 3 first.', 'error');
+                return;
+            }
+
+            // Mark as completed
+            video1.classList.add('completed');
+            video1.querySelector('.status').textContent = '(✓ Completed)';
+            video1.style.background = '#1a4d1a';
+            log(testId, '✅ Video 1 marked as completed', 'success');
+
+            // Find next video
+            const allVideos = document.querySelectorAll('.video-item');
+            let foundCurrent = false;
+            let nextVideo = null;
+
+            for (let video of allVideos) {
+                if (foundCurrent && !video.classList.contains('completed')) {
+                    nextVideo = video;
+                    break;
+                }
+                if (video.getAttribute('data-video-id') == '1') {
+                    foundCurrent = true;
+                }
+            }
+
+            if (nextVideo) {
+                const nextId = nextVideo.getAttribute('data-video-id');
+                log(testId, `▶️ Found next video: ${nextId}`, 'success');
+                log(testId, `🎥 Would click video ${nextId}`, 'info');
+
+                // Highlight next video
+                nextVideo.style.border = '3px solid #00ff00';
+                setTimeout(() => {
+                    nextVideo.style.border = '1px solid #555';
+                }, 2000);
+            } else {
+                log(testId, '⚠️ No next video found', 'warning');
+            }
+        }
+
+        function openLearningPage() {
+            const testId = 'test5';
+            const logDiv = document.getElementById(testId + '-log');
+            logDiv.innerHTML = '';
+
+            log(testId, 'Opening learning page...', 'info');
+            log(testId, 'Check browser console (F12) for debug logs', 'warning');
+            log(testId, 'Look for logs starting with 🎯, 📡, ✅, etc.', 'info');
+
+            // Try to open - adjust URL as needed
+            window.open('/student/courses/1/learn', '_blank');
+        }
+
+        // Auto-run test 1 on load
+        setTimeout(() => {
+            test1();
+        }, 500);
+    </script>
+
+    <hr style="border-color: #00ff00; margin: 40px 0;">
+
+    <div style="background: #1a1a1a; padding: 15px; border-left: 4px solid #ffaa00;">
+        <h3 style="color: #ffaa00;">📝 INSTRUCTIONS:</h3>
+        <ol style="color: #ccc;">
+            <li>Run Test 1 to check if functions exist</li>
+            <li>Run Test 2 to detect video items (will only work on learning page)</li>
+            <li>Run Test 3 to create mock videos, then Test 4 to simulate auto-next</li>
+            <li>Click "Open Learning Page" and check browser console for debug logs</li>
+        </ol>
+
+        <h3 style="color: #ffaa00; margin-top: 20px;">🔍 WHAT TO LOOK FOR:</h3>
+        <ul style="color: #ccc;">
+            <li>When you click "Tandai Selesai", console should show: <code style="color: #00ff00;">🎯 Marking video as complete</code></li>
+            <li>Then: <code style="color: #00ff00;">📡 Response status: 200</code></li>
+            <li>Then: <code style="color: #00ff00;">✅ Progress saved successfully</code></li>
+            <li>Then: <code style="color: #00ff00;">🎬 Loading next video...</code></li>
+            <li>Finally: Video should auto-switch to next video</li>
+        </ul>
+    </div>
+</body>
+</html>

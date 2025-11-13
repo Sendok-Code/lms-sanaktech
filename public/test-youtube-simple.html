@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Embed Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .test-container {
+            margin-bottom: 40px;
+            border: 2px solid #ddd;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        h2 {
+            color: #333;
+            margin-top: 0;
+        }
+        iframe {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #ccc;
+        }
+        .info {
+            background: #f0f0f0;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎥 YouTube Embed Test</h1>
+    <p>Test berbagai format embed YouTube. Jika video tidak tampil, ada masalah dengan browser atau video.</p>
+
+    <!-- Test 1: Standard Embed -->
+    <div class="test-container">
+        <h2>Test 1: Standard YouTube Embed (Rick Roll)</h2>
+        <iframe
+            src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen>
+        </iframe>
+        <div class="info">
+            <strong>URL:</strong> https://www.youtube.com/embed/dQw4w9WgXcQ<br>
+            <strong>Status:</strong> Video public yang sangat terkenal, pasti bisa di-embed
+        </div>
+    </div>
+
+    <!-- Test 2: No-Cookie Embed -->
+    <div class="test-container">
+        <h2>Test 2: YouTube No-Cookie Embed</h2>
+        <iframe
+            src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen>
+        </iframe>
+        <div class="info">
+            <strong>URL:</strong> https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ<br>
+            <strong>Status:</strong> Versi privacy-enhanced mode
+        </div>
+    </div>
+
+    <!-- Test 3: With Parameters -->
+    <div class="test-container">
+        <h2>Test 3: Embed dengan Parameter</h2>
+        <iframe
+            src="https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1&rel=0&modestbranding=1"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen>
+        </iframe>
+        <div class="info">
+            <strong>URL:</strong> https://www.youtube.com/embed/dQw4w9WgXcQ?enablejsapi=1&rel=0&modestbranding=1<br>
+            <strong>Status:</strong> Dengan parameter tambahan
+        </div>
+    </div>
+
+    <hr style="margin: 40px 0;">
+
+    <div style="background: #fff3cd; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107;">
+        <h3>📋 Troubleshooting:</h3>
+        <ul>
+            <li><strong>Jika SEMUA video tidak tampil:</strong>
+                <ul>
+                    <li>Coba buka di browser lain (Chrome, Firefox, Edge)</li>
+                    <li>Coba buka di Incognito/Private mode</li>
+                    <li>Nonaktifkan semua browser extensions</li>
+                    <li>Cek koneksi internet</li>
+                </ul>
+            </li>
+            <li><strong>Jika hanya video tertentu yang tidak tampil:</strong>
+                <ul>
+                    <li>Video mungkin Private (ubah ke Unlisted)</li>
+                    <li>Video mungkin sudah dihapus</li>
+                    <li>Owner video menonaktifkan embed</li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+
+</body>
+</html>

@@ -21,6 +21,9 @@ class SettingsController extends Controller
             'site_logo' => Setting::get('site_logo'),
             'site_description' => Setting::get('site_description', 'Platform Pembelajaran Online Terbaik'),
             'logo_height' => Setting::get('logo_height', '40'),
+            'ceo_name' => (object)['value' => Setting::get('ceo_name', 'CEO & Founder')],
+            'platform_name' => (object)['value' => Setting::get('platform_name', 'LMS Learning Platform')],
+            'ceo_signature' => (object)['value' => Setting::get('ceo_signature')],
         ];
 
         return view('admin.settings.index', compact('settings'));
@@ -44,6 +47,9 @@ class SettingsController extends Controller
                 'site_description' => 'nullable|string|max:500',
                 'site_logo' => 'nullable|image|mimes:png,jpg,jpeg,svg|max:2048',
                 'logo_height' => 'nullable|integer|min:20|max:100',
+                'ceo_name' => 'nullable|string|max:255',
+                'platform_name' => 'nullable|string|max:255',
+                'ceo_signature' => 'nullable|image|mimes:png,jpg,jpeg|max:2048',
             ]);
 
             // Update site name
@@ -75,6 +81,34 @@ class SettingsController extends Controller
             } else {
                 // Set default if not provided
                 Setting::set('logo_height', '40', 'number', 'general');
+            }
+
+            // Update CEO name
+            if ($request->filled('ceo_name')) {
+                Setting::set('ceo_name', $request->ceo_name, 'string', 'general');
+            }
+
+            // Update platform name
+            if ($request->filled('platform_name')) {
+                Setting::set('platform_name', $request->platform_name, 'string', 'general');
+            }
+
+            // Handle CEO signature upload
+            if ($request->hasFile('ceo_signature')) {
+                if ($request->file('ceo_signature')->isValid()) {
+                    // Delete old signature if exists
+                    $oldSignature = Setting::get('ceo_signature');
+                    if ($oldSignature && Storage::disk('public')->exists($oldSignature)) {
+                        Storage::disk('public')->delete($oldSignature);
+                    }
+
+                    // Store new signature
+                    $signaturePath = $request->file('ceo_signature')->store('signatures', 'public');
+
+                    if ($signaturePath) {
+                        Setting::set('ceo_signature', $signaturePath, 'string', 'general');
+                    }
+                }
             }
 
             // Handle logo upload

@@ -1,0 +1,89 @@
+=== SIMPLE TEST - COPY PASTE KE CONSOLE ===
+
+1. Buka halaman learning
+2. Tekan F12 untuk buka Console
+3. Copy-paste command berikut satu per satu:
+
+// TEST 1: Check apakah function ada
+console.log('markAsComplete:', typeof markAsComplete);
+console.log('loadNextVideo:', typeof loadNextVideo);
+
+// TEST 2: Check video items
+const videos = document.querySelectorAll('.video-item');
+console.log('Total videos:', videos.length);
+
+// TEST 3: Check current video
+const currentBtn = document.getElementById('complete-btn');
+console.log('Complete button:', currentBtn);
+
+// TEST 4: Manual test click video 2
+const video2 = document.querySelector('[data-video-id="2"]');
+console.log('Video 2:', video2);
+if (video2) {
+    video2.click();
+    console.log('Clicked video 2 - Did it load?');
+}
+
+// TEST 5: Manual test markAsComplete
+// GANTI 1 dengan ID video yang sedang active
+markAsComplete(1);
+
+// TEST 6: Check response - tunggu setelah markAsComplete
+// Lihat di Network tab (F12 -> Network)
+// Cari request ke /student/progress/1
+// Klik request tersebut
+// Lihat Response tab - harus ada {success: true, progress: {...}}
+
+=== HASIL YANG DIHARAPKAN ===
+
+TEST 1:
+markAsComplete: function
+loadNextVideo: function
+
+TEST 2:
+Total videos: 20 (atau jumlah video di course)
+
+TEST 3:
+Complete button: <button ...>
+
+TEST 4:
+Video 2: <div class="video-item" ...>
+Clicked video 2 - Did it load?
+→ Video player HARUS pindah ke video 2
+
+TEST 5:
+Lihat apakah video pindah otomatis
+
+TEST 6:
+Response harus:
+{
+  "success": true,
+  "progress": {
+    "id": 1,
+    "enrollment_id": 1,
+    "video_id": 1,
+    "completed": true,
+    ...
+  }
+}
+
+=== JIKA TEST 4 GAGAL (Video tidak pindah saat click) ===
+
+Berarti masalah di onclick handler video item.
+
+Jalankan ini di console:
+const video2 = document.querySelector('[data-video-id="2"]');
+console.log('Video 2 onclick:', video2.onclick);
+
+Harus return: function
+
+Jika null, berarti onclick tidak terpasang.
+
+=== JIKA TEST 5 TIDAK PINDAH VIDEO ===
+
+Check Network tab:
+- Ada request ke /student/progress/1 ?
+- Status code berapa? (harus 200)
+- Response apa?
+
+Screenshot dan kirim ke saya.

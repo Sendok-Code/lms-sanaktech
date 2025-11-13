@@ -190,18 +190,22 @@ class StudentController extends Controller
             return response()->json(['error' => 'Not enrolled'], 403);
         }
 
-        $progress = Progress::where('enrollment_id', $enrollment->id)
-            ->where('video_id', $video->id)
-            ->first();
-
-        if ($progress) {
-            $progress->update([
-                'watched_seconds' => $request->watched_seconds,
+        // Use updateOrCreate to handle both new and existing progress
+        $progress = Progress::updateOrCreate(
+            [
+                'enrollment_id' => $enrollment->id,
+                'video_id' => $video->id,
+            ],
+            [
+                'watched_seconds' => $request->watched_seconds ?? 0,
                 'completed' => $request->completed ?? false,
                 'watched_at' => now(),
-            ]);
-        }
+            ]
+        );
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success' => true,
+            'progress' => $progress
+        ]);
     }
 }
